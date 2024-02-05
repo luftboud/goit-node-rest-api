@@ -4,10 +4,7 @@ import  { addContact, getContactById, listContacts, putContact, removeContact } 
 export const getAllContacts = async (req, res) => {
     const contacts = await listContacts()
     console.log(contacts);
-        res.status(200).json({
-            contacts: contacts,
-        }
-        )
+        res.status(200).json(contacts)
 };
 
 export const getOneContact = async (req, res) => {
@@ -19,10 +16,7 @@ export const getOneContact = async (req, res) => {
         msg: "Not found!!",
     })
     } else {
-        res.status(200).json({
-            contact: cont,
-        }
-        )
+        res.status(200).json(cont)
     }
 }; 
 
@@ -34,10 +28,7 @@ export const deleteContact = async (req, res) => {
         msg: "Not found!!",
     })
     } else {
-        res.status(200).json({
-            removed_contact: removedContact,
-        }
-        )
+        res.status(200).json(removedContact[0])
     }
 };
 
@@ -49,10 +40,8 @@ export const createContact = async (req, res) => {
         msg: validation.error.message,
     })
     } else {
-        const contacts = await addContact(contactBody)
-        res.status(201).json({
-        contacts,
-    })
+        const contact = await addContact(contactBody)
+        res.status(201).json(contact)
     }
 
 };
@@ -77,9 +66,6 @@ export const updateContact = async (req, res) => {
     })
         } else {
 
-            res.status(201).json({
-                contact: newContact,
-            })
-        }
+            res.status(201).json( newContact)}
     }
 };
