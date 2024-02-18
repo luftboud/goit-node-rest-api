@@ -34,7 +34,7 @@ export const deleteContact = async (req, res) => {
   const { id } = req.params;
   const removedContact = await removeContact(id);
   console.log(removedContact);
-  if (removedContact === null) {
+  if (removedContact === null || removedContact === undefined) {
     res.status(404).json({
       msg: "Not found!!",
     });
