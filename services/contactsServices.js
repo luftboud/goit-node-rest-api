@@ -1,10 +1,7 @@
-import fs from "fs/promises";
-import path from "path";
-import { contacts } from "../models/contactModel.js";
-import mongoose from "mongoose";
-// import { nanoid } from "nanoid";
 
-const contactsPath = path.join("db", "contacts.json");
+
+import { contacts } from "../models/contactModel.js";
+
 
 export async function listContacts() {
   try {
