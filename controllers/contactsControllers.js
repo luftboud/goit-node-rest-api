@@ -13,15 +13,16 @@ import {
 } from "../services/contactsServices.js";
 
 export const getAllContacts = async (req, res) => {
-  const contacts = await listContacts();
-  console.log(contacts);
+  const user = req.user;
+  const contacts = await listContacts(user);
   res.status(200).json(contacts);
 };
 
 export const getOneContact = async (req, res) => {
   const { id } = req.params;
-  const cont = await getContactById(id);
-  if (cont === undefined) {
+  const user = req.user;
+  const cont = await getContactById(id, user);
+  if (cont === undefined || !cont) {
     res.status(404).json({
       msg: "Not found!!",
     });
@@ -32,8 +33,8 @@ export const getOneContact = async (req, res) => {
 
 export const deleteContact = async (req, res) => {
   const { id } = req.params;
-  const removedContact = await removeContact(id);
-  console.log(removedContact);
+  const user = req.user;
+  const removedContact = await removeContact(id, user);
   if (removedContact === null || removedContact === undefined) {
     res.status(404).json({
       msg: "Not found!!",
@@ -45,13 +46,14 @@ export const deleteContact = async (req, res) => {
 
 export const createContact = async (req, res) => {
   const contactBody = req.body;
+  const user = req.user;
   const validation = createContactSchema.validate(contactBody);
   if (validation.error) {
     res.status(400).json({
       msg: validation.error.message,
     });
   } else {
-    const contact = await addContact(contactBody);
+    const contact = await addContact(contactBody, user);
     res.status(201).json(contact);
   }
 };
@@ -73,7 +75,8 @@ export const updateContact = async (req, res) => {
     });
   } else {
     const contactId = req.params.id;
-    const newContact = await putContact(contactId, contactBody);
+    const user = req.user;
+    const newContact = await putContact(contactId, contactBody, user);
     if (newContact === null) {
       res.status(404).json({
         msg: "Not found!",
@@ -93,8 +96,9 @@ export const patchContacts = async (req, res) => {
     });
   } else {
     const contactId = req.params.id;
-    const cont = await updateStatusContact(contactId, contactBody);
-    if (cont === undefined) {
+    const user = req.user;
+    const cont = await updateStatusContact(contactId, contactBody, user);
+    if (cont === undefined || !cont) {
       res.status(404).json({
         msg: "Not found!!",
       });
