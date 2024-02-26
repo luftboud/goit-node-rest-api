@@ -1,5 +1,10 @@
 import { userSchema } from "../schemas/userSchemas.js";
-import { deleteToken, getUser, postUser } from "../services/userServices.js";
+import {
+  deleteToken,
+  getUser,
+  patchAvatar,
+  postUser,
+} from "../services/userServices.js";
 
 export const registerUser = async (req, res) => {
   const userBody = req.body;
@@ -9,21 +14,21 @@ export const registerUser = async (req, res) => {
       msg: validation.error.message,
     });
   }
-  const responce = await postUser(userBody);
-  if (responce === 409) {
+  const response = await postUser(userBody);
+  if (response === 409) {
     return res.status(409).json({
       message: "Email in use",
     });
   }
-  if (!responce.email) {
+  if (!response.email) {
     return res.status(400).json({
-      msg: responce,
+      msg: response,
     });
   }
   res.status(201).json({
     user: {
-      email: responce.email,
-      subscription: responce.subscription,
+      email: response.email,
+      subscription: response.subscription,
     },
   });
 };
@@ -36,29 +41,29 @@ export const loginUser = async (req, res) => {
       msg: validation.error.message,
     });
   }
-  const responce = await getUser(userBody);
-  if (responce === 401) {
+  const response = await getUser(userBody);
+  if (response === 401) {
     return res.status(401).json({
       message: "Email or password is wrong",
     });
   }
-  if (!responce.email) {
+  if (!response.email) {
     return res.status(400).json({
-      msg: responce,
+      msg: response,
     });
   }
   res.status(200).json({
-    token: responce.token,
+    token: response.token,
     user: {
-      email: responce.email,
-      subscription: responce.subscription,
+      email: response.email,
+      subscription: response.subscription,
     },
   });
 };
 
 export const logoutUser = async (req, res) => {
-  const responce = await deleteToken(req.user);
-  console.log(responce);
+  const response = await deleteToken(req.user);
+  console.log(response);
   res.status(204).json();
 };
 
@@ -67,5 +72,19 @@ export const currentUser = async (req, res) => {
   res.status(200).json({
     email: user.email,
     subscription: user.subscription,
+  });
+};
+
+export const updateAvatar = async (req, res) => {
+  const response = await patchAvatar(req);
+  if (response.processFailed) {
+    return res.status(400).json({
+      msg: "Something went wrong!",
+      error: response.err,
+    });
+  }
+  res.status(200).json({
+    msg: "Avatar successfuly updated!",
+    avatar: response
   });
 };

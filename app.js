@@ -10,18 +10,21 @@ import userRouter from "./routes/userRouter.js";
 const app = express();
 
 mongoose
-  .connect('mongodb+srv://luftboud:2xCkA0c2ZjjwwkEy@cluster0.y7d2eja.mongodb.net/db-contacts')
+  .connect(
+    "mongodb+srv://luftboud:2xCkA0c2ZjjwwkEy@cluster0.y7d2eja.mongodb.net/db-contacts"
+  )
   .then(() => {
     console.log("Database connection successful");
   })
   .catch((err) => {
     console.log(err);
     process.exit(1);
-  })
+  });
 
 app.use(morgan("tiny"));
 app.use(cors());
 app.use(express.json());
+app.use(express.static("public"));
 
 app.use("/api/contacts", contactsRouter);
 app.use("/api/users", userRouter);
