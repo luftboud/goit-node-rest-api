@@ -1,9 +1,11 @@
-import { userSchema } from "../schemas/userSchemas.js";
+import { userSchema, verifySchema } from "../schemas/userSchemas.js";
 import {
   deleteToken,
+  findUser,
   getUser,
   patchAvatar,
   postUser,
+  reFindUser,
 } from "../services/userServices.js";
 
 export const registerUser = async (req, res) => {
@@ -45,6 +47,11 @@ export const loginUser = async (req, res) => {
   if (response === 401) {
     return res.status(401).json({
       message: "Email or password is wrong",
+    });
+  }
+  if (response === 303) {
+    return res.status(303).json({
+      message: "Your account is not verified",
     });
   }
   if (!response.email) {
@@ -90,6 +97,47 @@ export const updateAvatar = async (req, res) => {
   }
   res.status(200).json({
     msg: "Avatar successfuly updated!",
-    avatar: response
+    avatar: response,
+  });
+};
+
+export const verifyUser = async (req, res) => {
+  const token = req.params.verificationToken;
+  const response = await findUser(token);
+  if (response === 400) {
+    return res.status(400).json({
+      msg: "This user has already been verified.",
+    });
+  }
+  if (!response) {
+    return res.status(404).json({
+      msg: "Not found!",
+    });
+  }
+  res.status(200).json({
+    msg: "Verification successful.",
+  });
+};
+
+export const sendEmail = async (req, res) => {
+  const validation = verifySchema.validate(req.body);
+  if (validation.error) {
+    res.status(400).json({
+      msg: validation.error.message,
+    });
+  }
+  const response = await reFindUser(req.body.email);
+  if (response === 400) {
+    return res.status(400).json({
+      msg: "This user has already been verified.",
+    });
+  }
+  if (!response) {
+    return res.status(404).json({
+      msg: "Not found!",
+    });
+  }
+  res.status(200).json({
+    msg: "Verification email sent.",
   });
 };

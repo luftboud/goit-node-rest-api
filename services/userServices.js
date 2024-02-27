@@ -7,6 +7,10 @@ import path from "path";
 import fs from "fs/promises";
 import { avatarsDir } from "../vars/avatarsDir.js";
 import Jimp from "jimp";
+import { customAlphabet } from "nanoid";
+import { emailSender } from "../middlewares/emailSender.js";
+
+const nanoid = customAlphabet("1234567890abcdef", 10);
 
 const bcrypt = pkg;
 
@@ -21,11 +25,16 @@ export async function postUser(userBody) {
   try {
     const hash = bcrypt.hashSync(password, 8);
     const avatar = gravatar.profile_url(email);
+    const verificationToken = nanoid();
     const result = await users.create({
       email,
       password: hash,
       avatarURL: avatar,
+      verificationToken,
     });
+
+    emailSender(email, verificationToken);
+
     return result;
   } catch (err) {
     return err;
@@ -43,6 +52,10 @@ export async function getUser(userBody) {
   const checkPassword = bcrypt.compareSync(password, user.password);
   if (!checkPassword) {
     return 401;
+  }
+  const verified = user.verify;
+  if (!verified) {
+    return 303;
   }
   const payload = {
     id: user.id,
@@ -89,7 +102,37 @@ export async function patchAvatar(req) {
     return err;
   });
   if (processFailed) {
-    return {err : error, processFailed};
+    return { err: error, processFailed };
   }
   return avatar;
+}
+export async function findUser(token) {
+  const user = await users
+    .findOne({ verificationToken: token })
+    .catch((err) => {
+      return err;
+    });
+  if (!user) {
+    return false;
+  }
+  if (user.verify) {
+    return 400;
+  }
+  const { id } = user;
+  await users.findByIdAndUpdate(id, { verify: true, verificationToken: null });
+  return true;
+}
+export async function reFindUser(email) {
+  const user = await users.findOne({ email }).catch((err) => {
+    return err;
+  });
+  if (!user) {
+    return false;
+  }
+  if (user.verify) {
+    return 400;
+  }
+  const { verificationToken } = user;
+  emailSender(email, verificationToken);
+  return true;
 }
