@@ -76,6 +76,11 @@ export const currentUser = async (req, res) => {
 };
 
 export const updateAvatar = async (req, res) => {
+  if (req.file === undefined || !req.file) {
+    return res.status(400).json({
+      msg: "You should upload file!",
+    });
+  }
   const response = await patchAvatar(req);
   if (response.processFailed) {
     return res.status(400).json({
